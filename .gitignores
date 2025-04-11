@@ -1,0 +1,32 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Entornos virtuales
+env/
+venv/
+.venv/
+
+# Archivos de modelo
+*.pkl
+*.h5
+
+# Datos y CSV
+*.csv
+*.xlsx
+
+# Streamlit
+.streamlit/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de logs
+*.log
+
+# Archivos de configuración del editor
+*.vscode/
+.idea/
+#Agregar .gitignores
