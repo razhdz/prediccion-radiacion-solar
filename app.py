@@ -47,3 +47,4 @@ eficiencia = 0.15
 potencia_instalada = 1  # en MW
 energia_generada = prediccion * potencia_instalada * eficiencia * 365  # energía anual estimada
 st.write(f"Estimación de energía generada para el año {año}: {energia_generada:.2f} kWh/anual")
+#agregar app.py
