@@ -2,7 +2,6 @@ import streamlit as st
 import joblib
 import pandas as pd
 import plotly.express as px
-import plotly.express as px
 # Cargar el modelo
 modelo = joblib.load('modelo_radiacion.pkl')
 
