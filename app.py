@@ -1,49 +1,49 @@
 import streamlit as st
-import joblib
 import pandas as pd
+import joblib
+import numpy as np
 import plotly.express as px
-# Cargar el modelo
+
+# Cargar el modelo guardado
 modelo = joblib.load('modelo_radiacion.pkl')
 
 # Título de la app
-st.title("Predicción de Radiación Solar - Coatl Energy MX")
+st.title("Predicción de Radiación Solar para Coatl Energy MX")
 
-# Entrada de año
-año = st.slider("Selecciona el Año para la Predicción:", min_value=2025, max_value=2030, value=2025)
+# Descripción breve de la app
+st.markdown("""
+Esta aplicación predice la radiación solar diaria promedio en función de la temperatura, nubosidad y año. 
+Utiliza un modelo entrenado basado en datos históricos de radiación solar.
+""")
 
-# Simulamos un dataframe para entrada
-X_input = pd.DataFrame({
-    'AÑO': [año],
-    'TEMPERATURA': [23.0],  # Ajusta según sea necesario
-    'NUBOSIDAD': [60.0]     # Ajusta según sea necesario
-})
+# Formulario interactivo para ingresar datos
+st.sidebar.header("Parámetros de entrada")
 
-# Predicción
-prediccion = modelo.predict(X_input)[0]
-st.write(f"Predicción de radiación para el año {año}: {prediccion:.2f} kWh/m²/día")
+# Entradas del usuario
+anio = st.sidebar.number_input("Año", min_value=2020, max_value=2027, value=2023)
+temperatura = st.sidebar.slider("Temperatura Promedio (°C)", min_value=-10, max_value=40, value=20)
+nubosidad = st.sidebar.slider("Porcentaje de Nubosidad", min_value=0, max_value=100, value=50)
 
-# Datos históricos (simulados)
-historicos = {
-    'Año': [2020, 2021, 2022, 2023],
-    'Radiación (kWh/m²/día)': [5.8, 5.6, 5.7, 5.69]  # Simulación de datos históricos
-}
-df_hist = pd.DataFrame(historicos)
+# Preparar los datos de entrada para el modelo
+entrada = np.array([anio, temperatura, nubosidad]).reshape(1, -1)
 
-# Gráfico de barras con predicción
-fig = px.bar(df_hist, x='Año', y='Radiación (kWh/m²/día)', 
-             title="Radiación Solar: Predicción vs Históricos", 
-             labels={'Radiación (kWh/m²/día)': 'Radiación (kWh/m²/día)'})
-fig.add_bar(x=[año], y=[prediccion], name=f'Predicción {año}', marker_color='red')
-st.plotly_chart(fig)
+# Botón para hacer la predicción
+if st.sidebar.button("Predecir Radiación Solar"):
+    # Hacer la predicción
+    prediccion = modelo.predict(entrada)
+    
+    # Mostrar el resultado de la predicción
+    st.subheader(f"Radiación solar predicha para el año {anio}:")
+    st.write(f"{prediccion[0]:.2f} kWh/m²/día")
+    
+    # Crear un gráfico de la predicción usando Plotly
+    fig = px.bar(x=[anio], y=[prediccion[0]], labels={'x': 'Año', 'y': 'Radiación (kWh/m²/día)'},
+                 title="Predicción de Radiación Solar")
+    st.plotly_chart(fig)
 
-# Gráfico de tendencia
-fig_trend = px.line(df_hist, x='Año', y='Radiación (kWh/m²/día)', 
-                    title="Tendencia de Radiación Solar en los Últimos Años")
-st.plotly_chart(fig_trend)
-
-# Estimación de energía generada
-eficiencia = 0.15
-potencia_instalada = 1  # en MW
-energia_generada = prediccion * potencia_instalada * eficiencia * 365  # energía anual estimada
-st.write(f"Estimación de energía generada para el año {año}: {energia_generada:.2f} kWh/anual")
+# Agregar una recomendación o análisis adicional si se desea
+st.markdown("""
+Basado en los resultados de la predicción, se pueden tomar decisiones informadas sobre la planificación de la 
+instalación de sistemas solares o la optimización de la energía renovable para el año especificado.
+""")
 #agregar app.py
