@@ -1,54 +1,49 @@
 import streamlit as st
 import joblib
-import numpy as np
-import datetime
+import pandas as pd
+import plotly.express as px
 
 # Cargar el modelo
-modelo = joblib.load("modelo_radiacion.pkl")
+modelo = joblib.load('modelo_radiacion.pkl')
 
-# Estilo de página
-st.set_page_config(
-    page_title="Predicción Solar - Coatl Energy MX",
-    page_icon="☀️",
-    layout="centered"
-)
+# Título de la app
+st.title("Predicción de Radiación Solar - Coatl Energy MX")
 
-# Encabezado
-st.title("🔆 Predicción de Radiación Solar")
-st.subheader("Desarrollado por Coatl Energy MX")
-st.markdown("---")
+# Entrada de año
+año = st.slider("Selecciona el Año para la Predicción:", min_value=2025, max_value=2030, value=2025)
 
-# Estilo informativo
-st.markdown("""
-<style>
-    .main {
-        background-color: #f0f2f6;
-    }
-    .stApp {
-        font-family: 'Arial', sans-serif;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Entradas del usuario
-st.markdown("### 🧾 Ingresa los datos para estimar la radiación:")
-
-año = st.slider("Año", min_value=2020, max_value=2030, value=2025)
-temperatura = st.number_input("🌡️ Temperatura promedio (°C)", min_value=-10.0, max_value=60.0, value=25.0)
-nubosidad = st.slider("☁️ Nivel de nubosidad (0.0 = despejado, 1.0 = muy nublado)", 0.0, 1.0, 0.3)
+# Simulamos un dataframe para entrada
+X_input = pd.DataFrame({
+    'AÑO': [año],
+    'TEMPERATURA': [23.0],  # Ajusta según sea necesario
+    'NUBOSIDAD': [60.0]     # Ajusta según sea necesario
+})
 
 # Predicción
-if st.button("📊 Predecir radiación"):
-    entrada = np.array([[año, temperatura, nubosidad]])
-    resultado = modelo.predict(entrada)[0]
-    
-    st.success(f"🔅 Radiación solar estimada: **{resultado:.2f} kWh/m²/día**")
+prediccion = modelo.predict(X_input)[0]
+st.write(f"Predicción de radiación para el año {año}: {prediccion:.2f} kWh/m²/día")
 
-    # Estimación anual
-    generacion_anual = resultado * 365 * 5_000  # Ejemplo con 5000 m² de panel
-    st.info(f"⚡ Generación estimada anual: **{generacion_anual:,.2f} kWh**")
+# Datos históricos (simulados)
+historicos = {
+    'Año': [2020, 2021, 2022, 2023],
+    'Radiación (kWh/m²/día)': [5.8, 5.6, 5.7, 5.69]  # Simulación de datos históricos
+}
+df_hist = pd.DataFrame(historicos)
 
-# Footer
-st.markdown("---")
-st.caption("© 2025 Coatl Energy MX · Predicción impulsada por Machine Learning")
+# Gráfico de barras con predicción
+fig = px.bar(df_hist, x='Año', y='Radiación (kWh/m²/día)', 
+             title="Radiación Solar: Predicción vs Históricos", 
+             labels={'Radiación (kWh/m²/día)': 'Radiación (kWh/m²/día)'})
+fig.add_bar(x=[año], y=[prediccion], name=f'Predicción {año}', marker_color='red')
+st.plotly_chart(fig)
 
+# Gráfico de tendencia
+fig_trend = px.line(df_hist, x='Año', y='Radiación (kWh/m²/día)', 
+                    title="Tendencia de Radiación Solar en los Últimos Años")
+st.plotly_chart(fig_trend)
+
+# Estimación de energía generada
+eficiencia = 0.15
+potencia_instalada = 1  # en MW
+energia_generada = prediccion * potencia_instalada * eficiencia * 365  # energía anual estimada
+st.write(f"Estimación de energía generada para el año {año}: {energia_generada:.2f} kWh/anual")
