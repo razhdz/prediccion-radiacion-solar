@@ -1,29 +1,54 @@
 import streamlit as st
-import numpy as np
 import joblib
+import numpy as np
+import datetime
 
-# Cargar el modelo previamente entrenado
-modelo = joblib.load('modelo_radiacion.pkl')
+# Cargar el modelo
+modelo = joblib.load("modelo_radiacion.pkl")
 
-# Título de la app
-st.title('☀️ Predicción de Radiación Solar')
-st.subheader('by Coatl Energy MX')
+# Estilo de página
+st.set_page_config(
+    page_title="Predicción Solar - Coatl Energy MX",
+    page_icon="☀️",
+    layout="centered"
+)
 
+# Encabezado
+st.title("🔆 Predicción de Radiación Solar")
+st.subheader("Desarrollado por Coatl Energy MX")
+st.markdown("---")
+
+# Estilo informativo
 st.markdown("""
-Esta aplicación predice la **radiación solar promedio diaria (kWh/m²/día)** 
-usando como entrada el año, la temperatura promedio y la nubosidad.
-""")
+<style>
+    .main {
+        background-color: #f0f2f6;
+    }
+    .stApp {
+        font-family: 'Arial', sans-serif;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Entradas del usuario
-año = st.number_input('Año', min_value=2020, max_value=2100, value=2025, step=1)
-temperatura = st.number_input('Temperatura promedio (°C)', value=25.0)
-nubosidad = st.number_input('Nubosidad promedio (0 a 1)', min_value=0.0, max_value=1.0, value=0.2)
+st.markdown("### 🧾 Ingresa los datos para estimar la radiación:")
 
-# Crear un arreglo con los datos ingresados
-input_data = np.array([[año, temperatura, nubosidad]])
+año = st.slider("Año", min_value=2020, max_value=2030, value=2025)
+temperatura = st.number_input("🌡️ Temperatura promedio (°C)", min_value=-10.0, max_value=60.0, value=25.0)
+nubosidad = st.slider("☁️ Nivel de nubosidad (0.0 = despejado, 1.0 = muy nublado)", 0.0, 1.0, 0.3)
 
-# Botón para predecir
-if st.button('Predecir Radiación Solar'):
-    prediccion = modelo.predict(input_data)
-    st.success(f'🌞 Radiación solar estimada: {prediccion[0]:.2f} kWh/m²/día')
-#Agregar app.py
+# Predicción
+if st.button("📊 Predecir radiación"):
+    entrada = np.array([[año, temperatura, nubosidad]])
+    resultado = modelo.predict(entrada)[0]
+    
+    st.success(f"🔅 Radiación solar estimada: **{resultado:.2f} kWh/m²/día**")
+
+    # Estimación anual
+    generacion_anual = resultado * 365 * 5_000  # Ejemplo con 5000 m² de panel
+    st.info(f"⚡ Generación estimada anual: **{generacion_anual:,.2f} kWh**")
+
+# Footer
+st.markdown("---")
+st.caption("© 2025 Coatl Energy MX · Predicción impulsada por Machine Learning")
+
